@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catálogo de zapatos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#151a17; --surface:#1e2521; --surface-2:#151a17; --line:#2c352f;
+  --text:#e9eee9; --muted:#86938a; --accent:#a9bfa6; --accent-ink:#17211a;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{padding:56px 0 28px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(3rem,10vw,6.5rem);line-height:.9;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:14px 0 0;max-width:46ch}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-block:1px solid var(--line);padding:14px 0}
+.bar .wrap{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+.field{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.field::placeholder{color:var(--muted)}
+.meta{display:flex;justify-content:space-between;align-items:center;padding:18px 0 8px;color:var(--muted);font-size:.95rem}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;padding:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;padding:10px 0 72px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0;text-align:left;cursor:pointer;overflow:hidden;display:flex;flex-direction:column}
+.card:hover{border-color:var(--accent)}
+.pic{background:var(--surface-2);padding:22px 18px 10px}
+.pic svg{width:100%;height:auto;display:block}
+.pic img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;border-radius:6px}
+.info{padding:14px 16px 18px}
+.brand{color:var(--muted);font-size:.9rem}
+.name{font-family:var(--display);font-weight:700;font-size:1.55rem;line-height:1.1;margin:2px 0 8px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.price{font-weight:600}
+.tag{font-size:.82rem;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:1px 10px}
+.empty{grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted)}
+dialog{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:0;width:min(760px,calc(100% - 24px));max-height:calc(100% - 24px)}
+dialog::backdrop{background:rgba(5,7,10,.75)}
+.dlg{display:grid;grid-template-columns:1fr 1fr}
+.dlg .pic{display:flex;align-items:center;padding:24px}
+.dlg .body{padding:26px 24px 24px}
+.dlg h2{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:1;margin:2px 0 10px}
+.dlg p{color:var(--muted);margin:0 0 16px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0 0 18px}
+dt{color:var(--muted)} dd{margin:0}
+.sizes{display:flex;flex-wrap:wrap;gap:6px}
+.sizes span{border:1px solid var(--line);border-radius:6px;padding:2px 9px;font-size:.9rem}
+.close{position:absolute;top:10px;right:10px;background:var(--bg);border:1px solid var(--line);border-radius:99px;width:36px;height:36px;cursor:pointer}
+dialog{position:fixed}
+@media (max-width:760px){
+  .bar .wrap{grid-template-columns:1fr 1fr}
+  .bar .wrap .field:first-child{grid-column:1/-1}
+  .dlg{grid-template-columns:1fr}
+  dialog{overflow:auto}
+}
+@media (prefers-reduced-motion:no-preference){
+  .card{transition:border-color .15s,transform .15s}
+  .card:hover{transform:translateY(-3px)}
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>Catálogo de zapatos</h1>
+  <br>
+  <p class="sub">Toda la colección en un solo lugar. Busca por nombre o filtra por marca, categoría y talla.</p>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <input class="field" id="q" type="search" placeholder="Buscar por nombre" aria-label="Buscar por nombre">
+    <select class="field" id="brand" aria-label="Marca"></select>
+    <select class="field" id="cat" aria-label="Categoría"></select>
+    <select class="field" id="size" aria-label="Talla"></select>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="meta"><span id="count"></span><button class="link" id="clear" type="button">Limpiar filtros</button></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<dialog id="dlg" aria-labelledby="dName"></dialog>
+
+<script>
+/* ===== Edita aquí tus zapatos =====
+   img: URL directa de la foto (termina en .jpg, .png o .webp).
+   Si lo dejas vacío ("") se muestra la silueta de color. */
+const SHOES = [
+  {id:1,img:"https://i.pinimg.com/736x/2d/8b/9b/2d8b9b2af920b4fb52460a5b47461c28.jpg",name:"Under Armour UA Lockdown 7",brand:"Under Armour",cat:"Sport",price:329900,sizes:[38,39,40,41,42,43],color:"#3dd6c6",colorName:"Rojo y negro",material:"Malla transpirable y Cuero",desc:"Parte superior de malla transpirable con revestimientos de cuero y película para una mayor sujeción y durabilidad."},
+  {id:2,img:"https://i.pinimg.com/736x/2b/67/55/2b6755df7a9c7bb6c6a0d4ae91bf7bf8.jpg",name:"Adidas Ultrarun 5",brand:"Adidas",cat:"Sport",price:259900,sizes:[36,37,38,39,40,41],color:"#f2f2f0",colorName:"Hueso",material:"Cuero sintético",desc:" El exterior de malla mantiene tus pies frescos y cómodos de principio a fin."},
+  {id:3,img:"https://i.pinimg.com/736x/70/50/74/7050743ba2f87ca3e06e90b95547c0c2.jpg",name:"Tommy Hilfigier Mujer Lawson",brand:"Tommy Hilfiger",cat:"Casual",price:389900,sizes:[39,40,41,42,43,44],color:"#8a6a4a",colorName:"Blanco",material:"Cuero y suela de goma",desc:"Resistente con buen agarre para caminatas y terrenos irregulares."},
+  {id:4,img:"https://i.pinimg.com/736x/db/a2/41/dba24174626d9ea5990e4a76b6000968.jpg",name:"Puma Adelina 2",brand:"Puma",cat:"Casual",price:349900,sizes:[39,40,41,42,43],color:"#2b2b30",colorName:"Negro",material:"Cuero genuino",desc:" Plantilla cómoda, diseñada con un talón extra grueso para proporcionar una amortiguación suave."},
+  {id:5,img:"https://i.pinimg.com/736x/e3/5c/30/e35c30c34c8a6176531076ac7b6c0ede.jpg",name:"Puma Twitch Runner Mujer",brand:"Puma",cat:"Sport",price:429900,sizes:[38,40,41,42,43,44],color:"#ff7a45",colorName:"Negro y rosado",material:"Malla y espuma ligera",desc:"Respuesta rápida y mucha comodidad para ritmos exigentes."},
+  {id:6,img:"https://i.pinimg.com/736x/96/73/ad/9673adeb86c069402cb9282bcc350005.jpg",name:"Nike Precision 7",brand:"Nike",cat:"Sport",price:289900,sizes:[36,37,38,39,40,41,42],color:"#4a7bd6",colorName:"Azul",material:"Negro y blanco",desc:"Diseñados con una combinación de control del suelo, comodidad y tracción."},
+  {id:7,img:"https://i.pinimg.com/736x/94/5b/f5/945bf504bfca26bbde48d5c49a27380a.jpg",name:"Under Armour UA Lockdown 7",brand:"Under Armour",cat:"Sport",price:299900,sizes:[39,40,41,42],color:"#6b3f2a",colorName:"Negro y dorado",material:"Malla transpirable y Cuero",desc:"Parte superior de malla transpirable con revestimientos de cuero y película para una mayor sujeción y durabilidad."},
+  {id:8,img:"https://i.pinimg.com/736x/a2/9a/d4/a29ad42b5422885bf97a2eba0e60cedb.jpg",name:"Nautica kappil",brand:"Nautica",cat:"Sport",price:459900,sizes:[40,41,42,43,44],color:"#556b4a",colorName:"Morado y blanco",material:"Malla",desc:"La tela de malla ligera promueve el flujo de aire y mantiene los pies frescos al caminar, entrenar o el uso diario."}
+];
+/* =================================== */
+
+const $ = id => document.getElementById(id);
+const money = new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0});
+
+function shoeSVG(color){
+  return `<svg viewBox="0 0 200 110" role="img" aria-hidden="true">
+    <path d="M10 76h182v6q0 12-14 12H24q-14 0-14-12z" fill="#e9ecf2"/>
+    <path d="M14 76V58q0-8 10-10l28-6q12-2 20-14l12-14q6-6 14 0l10 12q12 14 38 20 34 6 44 20 4 6 2 10z" fill="${color}"/>
+    <path d="M70 40l14 8M82 30l14 8M94 24l14 10" stroke="rgba(0,0,0,.35)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M30 66q50 4 150 4" stroke="rgba(255,255,255,.55)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function pic(s){
+  return s.img
+    ? `<img src="${s.img}" alt="${s.name}" loading="lazy" referrerpolicy="no-referrer" data-color="${s.color}">`
+    : shoeSVG(s.color);
+}
+
+function fillSelect(el, label, values){
+  el.innerHTML = `<option value="">${label}</option>` + values.map(v=>`<option value="${v}">${v}</option>`).join("");
+}
+const uniq = a => [...new Set(a)].sort((x,y)=>String(x).localeCompare(String(y),"es",{numeric:true}));
+fillSelect($("brand"),"Todas las marcas",uniq(SHOES.map(s=>s.brand)));
+fillSelect($("cat"),"Todas las categorías",uniq(SHOES.map(s=>s.cat)));
+fillSelect($("size"),"Todas las tallas",uniq(SHOES.flatMap(s=>s.sizes)));
+
+function render(){
+  const q = $("q").value.trim().toLowerCase();
+  const b = $("brand").value, c = $("cat").value, z = $("size").value;
+  const list = SHOES.filter(s =>
+    (!q || s.name.toLowerCase().includes(q)) &&
+    (!b || s.brand===b) && (!c || s.cat===c) && (!z || s.sizes.includes(Number(z))));
+  $("count").textContent = list.length===1 ? "1 zapato" : list.length+" zapatos";
+  $("grid").innerHTML = list.length ? list.map(s=>`
+    <button class="card" type="button" data-id="${s.id}" aria-label="Ver detalles de ${s.name}">
+      <div class="pic">${pic(s)}</div>
+      <div class="info">
+        <div class="brand">${s.brand}</div>
+        <div class="name">${s.name}</div>
+        <div class="row"><span class="price">${money.format(s.price)}</span><span class="tag">${s.cat}</span></div>
+      </div>
+    </button>`).join("")
+    : `<div class="empty">No hay zapatos con esos filtros. Prueba con otra búsqueda o limpia los filtros.</div>`;
+}
+
+function openShoe(id){
+  const s = SHOES.find(x=>x.id===id); if(!s) return;
+  $("dlg").innerHTML = `
+    <button class="close" type="button" aria-label="Cerrar" id="x">✕</button>
+    <div class="dlg">
+      <div class="pic">${pic(s)}</div>
+      <div class="body">
+        <div class="brand">${s.brand}</div>
+        <h2 id="dName">${s.name}</h2>
+        <p>${s.desc}</p>
+        <dl>
+          <dt>Precio</dt><dd>${money.format(s.price)}</dd>
+          <dt>Categoría</dt><dd>${s.cat}</dd>
+          <dt>Color</dt><dd>${s.colorName}</dd>
+          <dt>Material</dt><dd>${s.material}</dd>
+        </dl>
+        <div class="brand" style="margin-bottom:6px">Tallas disponibles</div>
+        <div class="sizes">${s.sizes.map(t=>`<span>${t}</span>`).join("")}</div>
+      </div>
+    </div>`;
+  $("dlg").showModal();
+  $("x").onclick = () => $("dlg").close();
+}
+
+["q","brand","cat","size"].forEach(id => $(id).addEventListener("input",render));
+$("clear").onclick = () => { $("q").value=""; ["brand","cat","size"].forEach(i=>$(i).value=""); render(); };
+$("grid").addEventListener("click", e => { const c = e.target.closest(".card"); if(c) openShoe(Number(c.dataset.id)); });
+$("dlg").addEventListener("click", e => { if(e.target===$("dlg")) $("dlg").close(); });
+/* Si una foto no carga, se muestra la silueta de color */
+document.addEventListener("error", e => {
+  const t = e.target;
+  if(t.tagName==="IMG" && t.dataset.color) t.outerHTML = shoeSVG(t.dataset.color);
+}, true);
+render();
+</script>
+</body>
+</html>
