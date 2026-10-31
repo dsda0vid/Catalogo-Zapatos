@@ -39,6 +39,13 @@ h1{font-family:var(--display);font-weight:800;font-size:clamp(3rem,10vw,6.5rem);
 .pic{background:var(--surface-2);padding:22px 18px 10px}
 .pic svg{width:100%;height:auto;display:block}
 .pic img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;border-radius:6px}
+.car{position:relative}
+.car>div{width:100%}
+.nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:99px;border:1px solid rgba(233,238,233,.18);background:rgba(21,26,23,.72);color:var(--text);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .15s,color .15s,border-color .15s}
+.nav:hover{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.nav-prev{left:10px}
+.nav-next{right:10px}
+.cnt{position:absolute;bottom:10px;right:14px;font-size:.8rem;color:var(--muted);background:var(--bg);border-radius:99px;padding:1px 9px}
 .info{padding:14px 16px 18px}
 .brand{color:var(--muted);font-size:.9rem}
 .name{font-family:var(--display);font-weight:700;font-size:1.55rem;line-height:1.1;margin:2px 0 8px}
@@ -73,8 +80,7 @@ dialog{position:fixed}
 </head>
 <body>
 <header class="wrap">
-  <h1>Catálogo de zapatos</h1>
-  <br>
+  <h1>Catálogo<br>de zapatos</h1>
   <p class="sub">Toda la colección en un solo lugar. Busca por nombre o filtra por marca, categoría y talla.</p>
 </header>
 
@@ -93,20 +99,19 @@ dialog{position:fixed}
 </main>
 
 <dialog id="dlg" aria-labelledby="dName"></dialog>
-
 <script>
 /* ===== Edita aquí tus zapatos =====
    img: URL directa de la foto (termina en .jpg, .png o .webp).
    Si lo dejas vacío ("") se muestra la silueta de color. */
 const SHOES = [
-  {id:1,img:"https://i.pinimg.com/736x/2d/8b/9b/2d8b9b2af920b4fb52460a5b47461c28.jpg",name:"Under Armour UA Lockdown 7",brand:"Under Armour",cat:"Sport",price:399000,sizes:[41],color:"#3dd6c6",colorName:"Rojo y negro",material:"Malla transpirable y Cuero",desc:"Parte superior de malla transpirable con revestimientos de cuero y película para una mayor sujeción y durabilidad."},
-  {id:2,img:"https://i.pinimg.com/736x/2b/67/55/2b6755df7a9c7bb6c6a0d4ae91bf7bf8.jpg",name:"Adidas Ultrarun 5",brand:"Adidas",cat:"Sport",price:399000,sizes:[38,39],color:"#f2f2f0",colorName:"Hueso",material:"Cuero sintético",desc:" El exterior de malla mantiene tus pies frescos y cómodos de principio a fin."},
-  {id:3,img:"https://i.pinimg.com/736x/70/50/74/7050743ba2f87ca3e06e90b95547c0c2.jpg",name:"Tommy Hilfigier Mujer Lawson",brand:"Tommy Hilfiger",cat:"Casual",price:399000,sizes:[36,37],color:"#8a6a4a",colorName:"Blanco",material:"Cuero y suela de goma",desc:"Resistente con buen agarre para caminatas y terrenos irregulares."},
-  {id:4,img:"https://i.pinimg.com/736x/db/a2/41/dba24174626d9ea5990e4a76b6000968.jpg",name:"Puma Adelina 2",brand:"Puma",cat:"Casual",price:319000,sizes:[37,38],color:"#2b2b30",colorName:"Negro",material:"Cuero genuino",desc:" Plantilla cómoda, diseñada con un talón extra grueso para proporcionar una amortiguación suave."},
-  {id:5,img:"https://i.pinimg.com/736x/e3/5c/30/e35c30c34c8a6176531076ac7b6c0ede.jpg",name:"Puma Twitch Runner Mujer",brand:"Puma",cat:"Sport",price:349000,sizes:[37,38],color:"#ff7a45",colorName:"Negro y rosado",material:"Malla y espuma ligera",desc:"Respuesta rápida y mucha comodidad para ritmos exigentes."},
-  {id:6,img:"https://i.pinimg.com/736x/96/73/ad/9673adeb86c069402cb9282bcc350005.jpg",name:"Nike Precision 7",brand:"Nike",cat:"Sport",price:499000,sizes:[38],color:"#4a7bd6",colorName:"Azul",material:"Negro y blanco",desc:"Diseñados con una combinación de control del suelo, comodidad y tracción."},
-  {id:7,img:"https://i.pinimg.com/736x/94/5b/f5/945bf504bfca26bbde48d5c49a27380a.jpg",name:"Under Armour UA Lockdown 7",brand:"Under Armour",cat:"Sport",price:399000,sizes:[43],color:"#6b3f2a",colorName:"Negro y dorado",material:"Malla transpirable y Cuero",desc:"Parte superior de malla transpirable con revestimientos de cuero y película para una mayor sujeción y durabilidad."},
-  {id:8,img:"https://i.pinimg.com/736x/a2/9a/d4/a29ad42b5422885bf97a2eba0e60cedb.jpg",name:"Nautica kappil",brand:"Nautica",cat:"Sport",price:319000,sizes:[38],color:"#556b4a",colorName:"Morado y blanco",material:"Malla",desc:"La tela de malla ligera promueve el flujo de aire y mantiene los pies frescos al caminar, entrenar o el uso diario."}
+  {id:1,img:"https://i.pinimg.com/736x/2d/8b/9b/2d8b9b2af920b4fb52460a5b47461c28.jpg",fotos:[],name:"Under Armour UA Lockdown 7",brand:"Under Armour",cat:"Sport",price:399000,sizes:[41],color:"#3dd6c6",colorName:"Rojo y negro",material:"Malla transpirable y Cuero",desc:"Parte superior de malla transpirable con revestimientos de cuero y película para una mayor sujeción y durabilidad."},
+  {id:2,img:"https://i.pinimg.com/736x/2b/67/55/2b6755df7a9c7bb6c6a0d4ae91bf7bf8.jpg",fotos:["https://i.pinimg.com/736x/06/30/20/06302083e9d4ea3ecdacc27ad484b6f7.jpg],name:"Adidas Ultrarun 5",brand:"Adidas",cat:"Sport",price:399000,sizes:[38,39],color:"#f2f2f0",colorName:"Hueso",material:"Cuero sintético",desc:" El exterior de malla mantiene tus pies frescos y cómodos de principio a fin."},
+  {id:3,img:"https://i.pinimg.com/736x/70/50/74/7050743ba2f87ca3e06e90b95547c0c2.jpg",fotos:[],name:"Tommy Hilfigier Mujer Lawson",brand:"Tommy Hilfiger",cat:"Casual",price:399000,sizes:[36,37],color:"#8a6a4a",colorName:"Blanco",material:"Cuero y suela de goma",desc:"Resistente con buen agarre para caminatas y terrenos irregulares."},
+  {id:4,img:"https://i.pinimg.com/736x/db/a2/41/dba24174626d9ea5990e4a76b6000968.jpg",fotos:[],name:"Puma Adelina 2",brand:"Puma",cat:"Casual",price:319000,sizes:[37,38],color:"#2b2b30",colorName:"Negro",material:"Cuero genuino",desc:" Plantilla cómoda, diseñada con un talón extra grueso para proporcionar una amortiguación suave."},
+  {id:5,img:"https://i.pinimg.com/736x/e3/5c/30/e35c30c34c8a6176531076ac7b6c0ede.jpg",fotos:[],name:"Puma Twitch Runner Mujer",brand:"Puma",cat:"Sport",price:349000,sizes:[37,38],color:"#ff7a45",colorName:"Negro y rosado",material:"Malla y espuma ligera",desc:"Respuesta rápida y mucha comodidad para ritmos exigentes."},
+  {id:6,img:"https://i.pinimg.com/736x/96/73/ad/9673adeb86c069402cb9282bcc350005.jpg",fotos:[],name:"Nike Precision 7",brand:"Nike",cat:"Sport",price:499000,sizes:[38],color:"#4a7bd6",colorName:"Azul",material:"Negro y blanco",desc:"Diseñados con una combinación de control del suelo, comodidad y tracción."},
+  {id:7,img:"https://i.pinimg.com/736x/94/5b/f5/945bf504bfca26bbde48d5c49a27380a.jpg",fotos:[],name:"Under Armour UA Lockdown 7",brand:"Under Armour",cat:"Sport",price:399000,sizes:[43],color:"#6b3f2a",colorName:"Negro y dorado",material:"Malla transpirable y Cuero",desc:"Parte superior de malla transpirable con revestimientos de cuero y película para una mayor sujeción y durabilidad."},
+  {id:8,img:"https://i.pinimg.com/736x/a2/9a/d4/a29ad42b5422885bf97a2eba0e60cedb.jpg",fotos:[],name:"Nautica kappil",brand:"Nautica",cat:"Sport",price:319000,sizes:[38],color:"#556b4a",colorName:"Morado y blanco",material:"Malla",desc:"La tela de malla ligera promueve el flujo de aire y mantiene los pies frescos al caminar, entrenar o el uso diario."}
 ];
 /* =================================== */
 
@@ -126,6 +131,10 @@ function pic(s){
   return s.img
     ? `<img src="${s.img}" alt="${s.name}" loading="lazy" referrerpolicy="no-referrer" data-color="${s.color}">`
     : shoeSVG(s.color);
+}
+
+function imgTag(url,s){
+  return `<img src="${url}" alt="${s.name}" loading="lazy" referrerpolicy="no-referrer" data-color="${s.color}">`;
 }
 
 function fillSelect(el, label, values){
@@ -157,10 +166,14 @@ function render(){
 
 function openShoe(id){
   const s = SHOES.find(x=>x.id===id); if(!s) return;
+  const imgs = [s.img, ...(s.fotos||[])].filter(Boolean);
   $("dlg").innerHTML = `
     <button class="close" type="button" aria-label="Cerrar" id="x">✕</button>
     <div class="dlg">
-      <div class="pic">${pic(s)}</div>
+      <div class="pic car">
+        <div id="slide"></div>
+        ${imgs.length>1 ? `<button class="nav nav-prev" id="prev" type="button" aria-label="Foto anterior"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><button class="nav nav-next" id="next" type="button" aria-label="Foto siguiente"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button><span class="cnt" id="cnt"></span>` : ""}
+      </div>
       <div class="body">
         <div class="brand">${s.brand}</div>
         <h2 id="dName">${s.name}</h2>
@@ -177,6 +190,20 @@ function openShoe(id){
     </div>`;
   $("dlg").showModal();
   $("x").onclick = () => $("dlg").close();
+  let i = 0;
+  const show = () => {
+    $("slide").innerHTML = imgs.length ? imgTag(imgs[i],s) : shoeSVG(s.color);
+    if($("cnt")) $("cnt").textContent = (i+1)+" / "+imgs.length;
+  };
+  if(imgs.length>1){
+    $("prev").onclick = () => { i = (i-1+imgs.length)%imgs.length; show(); };
+    $("next").onclick = () => { i = (i+1)%imgs.length; show(); };
+  }
+  $("dlg").onkeydown = e => {
+    if(e.key==="ArrowLeft" && $("prev")) $("prev").click();
+    if(e.key==="ArrowRight" && $("next")) $("next").click();
+  };
+  show();
 }
 
 ["q","brand","cat","size"].forEach(id => $(id).addEventListener("input",render));
