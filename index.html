@@ -27,6 +27,11 @@ button,input,select{font:inherit;color:inherit}
 header{padding:56px 0 28px}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(3rem,10vw,6.5rem);line-height:.9;margin:0;letter-spacing:-.01em}
 .sub{color:var(--muted);margin:14px 0 0;max-width:46ch}
+.pay{display:inline-flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px;padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.pay img{height:30px;width:auto;border-radius:6px}
+.pay span{color:var(--muted);font-size:.95rem}
+.pay strong{font-family:var(--display);font-size:1.5rem;letter-spacing:.04em}
+.pay button{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:6px 14px;cursor:pointer;font-weight:600}
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-block:1px solid var(--line);padding:14px 0}
 .bar .wrap{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
 .field{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
@@ -82,6 +87,12 @@ dialog{position:fixed}
 <header class="wrap">
   <h1>Catálogo<br>de zapatos</h1>
   <p class="sub">Toda la colección en un solo lugar. Busca por nombre o filtra por marca, categoría y talla.</p>
+  <div class="pay">
+    <img id="nequiLogo" alt="Nequi" hidden>
+    <span>Paga por Nequi</span>
+    <strong id="nequi"></strong>
+    <button type="button" id="copy">Copiar número</button>
+  </div>
 </header>
 
 <div class="bar">
@@ -100,9 +111,18 @@ dialog{position:fixed}
 
 <dialog id="dlg" aria-labelledby="dName"></dialog>
 <script>
+/* Tu número de Nequi (cámbialo por el tuyo) */
+const NEQUI = "300 000 0000";
+
+/* Logo de Nequi: pega aquí la URL o la ruta del archivo, por ejemplo "logo-nequi.png".
+   Si lo dejas vacío (""), el logo no se muestra. */
+const NEQUI_LOGO = "https://play-lh.googleusercontent.com/ieznb73N7P1gm49TTOYpQX23BAUlRVxiVnzy2_YJQSAkcfOkKOi9U-UQlvW5vCt1Exf2ljI-rn4Hc81xddqg5M8=s0-br30";
+
 /* ===== Edita aquí tus zapatos =====
    img: URL directa de la foto (termina en .jpg, .png o .webp).
-   Si lo dejas vacío ("") se muestra la silueta de color. */
+   Si lo dejas vacío ("") se muestra la silueta de color.
+   fotos: lista de URLs auxiliares, por ejemplo ["url1","url2"].
+   Aparecen en la ventana de detalles con flechas (la foto principal va primero). */
 const SHOES = [
   {id:1,img:"https://i.pinimg.com/736x/2d/8b/9b/2d8b9b2af920b4fb52460a5b47461c28.jpg",fotos:["https://i.pinimg.com/736x/38/6e/c1/386ec11488da3c4064ed4f1653738705.jpg"],name:"Under Armour UA Lockdown 7",brand:"Under Armour",cat:"Sport",price:399000,sizes:[41],color:"#3dd6c6",colorName:"Rojo y negro",material:"Malla transpirable y Cuero",desc:"Parte superior de malla transpirable con revestimientos de cuero y película para una mayor sujeción y durabilidad."},
   {id:2,img:"https://i.pinimg.com/736x/2b/67/55/2b6755df7a9c7bb6c6a0d4ae91bf7bf8.jpg",fotos:["https://i.pinimg.com/736x/06/30/20/06302083e9d4ea3ecdacc27ad484b6f7.jpg"],name:"Adidas Ultrarun 5",brand:"Adidas",cat:"Sport",price:399000,sizes:[38,39],color:"#f2f2f0",colorName:"Hueso",material:"Malla transpirable",desc:" El exterior de malla mantiene tus pies frescos y cómodos de principio a fin."},
@@ -114,7 +134,6 @@ const SHOES = [
   {id:8,img:"https://i.pinimg.com/736x/a2/9a/d4/a29ad42b5422885bf97a2eba0e60cedb.jpg",fotos:[],name:"Nautica kappil",brand:"Nautica",cat:"Sport",price:319000,sizes:[38],color:"#556b4a",colorName:"Morado y blanco",material:"Malla",desc:"La tela de malla ligera promueve el flujo de aire y mantiene los pies frescos al caminar, entrenar o el uso diario."},
   {id:9,img:"https://i.pinimg.com/736x/69/77/25/697725fa36dd09569f3c18ffb505af82.jpg",fotos:["https://i.pinimg.com/736x/d7/4c/96/d74c96c7ee3211d62568eefefef8e9d0.jpg"],name:"Adidas Response Pace",brand:"Adidas",cat:"Sport",price:319000,sizes:[35],color:"#556b4a",colorName:"Blanco",material:"Malla transpirable",desc:"Tenis con amortiguación en la mediasuela de Cloudfoam para brindar mayor comodidad y soporte."},
   {id:10,img:"https://i.pinimg.com/736x/82/01/ff/8201ffbcc511b539f28965d2f5f5a338.jpg",fotos:["https://i.pinimg.com/736x/4c/de/2a/4cde2ac08c474680c56200821030fac7.jpg"],name:"Vans Brooklyn LS",brand:"Vans",cat:"Sport",price:319000,sizes:[40],color:"#556b4a",colorName:"Negro y blanco",material:"Cuero",desc:"Tenis de estilo urbano inspirados en el skate y el BMX, diseñados para el uso diario."}
-
 ];
 /* =================================== */
 
@@ -218,6 +237,22 @@ document.addEventListener("error", e => {
   const t = e.target;
   if(t.tagName==="IMG" && t.dataset.color) t.outerHTML = shoeSVG(t.dataset.color);
 }, true);
+
+/* Número de Nequi */
+$("nequi").textContent = NEQUI;
+if(NEQUI_LOGO){
+  const logo = $("nequiLogo");
+  logo.onerror = () => { logo.hidden = true; };
+  logo.src = NEQUI_LOGO;
+  logo.hidden = false;
+}
+$("copy").onclick = async () => {
+  const b = $("copy");
+  try { await navigator.clipboard.writeText(NEQUI.replace(/\s/g,"")); b.textContent = "¡Copiado!"; }
+  catch { b.textContent = "Cópialo manualmente"; }
+  setTimeout(() => b.textContent = "Copiar número", 1800);
+};
+
 render();
 </script>
 </body>
